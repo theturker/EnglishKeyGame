@@ -24,8 +24,14 @@ data class QuizUiState(
     val showFeedback: Boolean = false,
     val score: Int = 0,
     val totalAnswered: Int = 0,
+    val currentQuestionNumber: Int = 0,
+    val totalQuestions: Int = 10,
     val difficulty: Difficulty = Difficulty.EASY,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isQuizCompleted: Boolean = false,
+    val correctAnswers: Int = 0,
+    val wrongAnswers: Int = 0,
+    val previousDifficulty: Difficulty? = null
 )
 
 class QuizViewModel(
@@ -39,10 +45,26 @@ class QuizViewModel(
     
     private val category = Category(categoryId, categoryName, categoryIcon)
     
-    private val _uiState = MutableStateFlow(QuizUiState(category = category))
+    private val _uiState = MutableStateFlow(
+        QuizUiState(
+            category = category,
+            currentQuestionNumber = 0,
+            totalQuestions = 10
+        )
+    )
     val uiState: StateFlow<QuizUiState> = _uiState.asStateFlow()
     
+    private var correctCount = 0
+    private var wrongCount = 0
+    private var startDifficulty: Difficulty? = null
+    
     init {
+        // Quiz başladığında soru tracking'ini sıfırla
+        com.alperenturker.englishcardgame.core.data.di.AppModule.resetQuestionTracking(
+            categoryId = category.id,
+            difficulty = Difficulty.EASY // İlk başta EASY, sonra progress'e göre güncellenir
+        )
+        
         loadInitialProgress()
         loadNextQuestion()
     }
@@ -51,10 +73,12 @@ class QuizViewModel(
         viewModelScope.launch {
             val progress = getUserProgressUseCase(category.id)
             progress?.let {
+                startDifficulty = it.currentDifficulty
                 _uiState.value = _uiState.value.copy(
                     score = it.totalCorrect,
                     totalAnswered = it.totalAnswered,
-                    difficulty = it.currentDifficulty
+                    difficulty = it.currentDifficulty,
+                    previousDifficulty = it.currentDifficulty
                 )
             }
         }
@@ -62,6 +86,12 @@ class QuizViewModel(
     
     fun loadNextQuestion() {
         viewModelScope.launch {
+            // Quiz tamamlandı mı kontrol et
+            if (_uiState.value.currentQuestionNumber >= _uiState.value.totalQuestions) {
+                completeQuiz()
+                return@launch
+            }
+            
             _uiState.value = _uiState.value.copy(
                 isLoading = true,
                 errorMessage = null,
@@ -74,7 +104,8 @@ class QuizViewModel(
                 _uiState.value = _uiState.value.copy(
                     isLoading = false,
                     currentQuestion = question,
-                    difficulty = question.difficulty
+                    difficulty = question.difficulty,
+                    currentQuestionNumber = _uiState.value.currentQuestionNumber + 1
                 )
             } catch (e: Exception) {
                 _uiState.value = _uiState.value.copy(
@@ -86,16 +117,26 @@ class QuizViewModel(
     }
     
     fun onAnswerSelected(answer: AnswerOption) {
-        if (_uiState.value.selectedAnswerId != null || _uiState.value.isLoading) {
-            return // Zaten bir cevap seçildi veya yükleniyor
+        val currentState = _uiState.value
+        
+        if (currentState.selectedAnswerId != null || currentState.isLoading || currentState.isQuizCompleted) {
+            return // Zaten bir cevap seçildi veya yükleniyor veya quiz tamamlandı
         }
         
-        val question = _uiState.value.currentQuestion ?: return
+        val question = currentState.currentQuestion ?: return
         
         viewModelScope.launch {
+            val isCorrect = answer.isCorrect
+            if (isCorrect) {
+                correctCount++
+            } else {
+                wrongCount++
+            }
+            
+            // Önce feedback'i göster
             _uiState.value = _uiState.value.copy(
                 selectedAnswerId = answer.id,
-                isAnswerCorrect = answer.isCorrect,
+                isAnswerCorrect = isCorrect,
                 showFeedback = true
             )
             
@@ -106,21 +147,71 @@ class QuizViewModel(
                 answer = answer
             )
             
-            // Skoru güncelle
+            // Skoru güncelle (showFeedback'i koruyarak)
             _uiState.value = _uiState.value.copy(
                 score = progress.totalCorrect,
                 totalAnswered = progress.totalAnswered,
-                difficulty = progress.currentDifficulty
+                difficulty = progress.currentDifficulty,
+                correctAnswers = correctCount,
+                wrongAnswers = wrongCount,
+                showFeedback = true, // showFeedback'i koru
+                selectedAnswerId = answer.id, // selectedAnswerId'yi koru
+                isAnswerCorrect = isCorrect // isAnswerCorrect'i koru
             )
             
-            // Kısa bir gecikme sonrası bir sonraki soruya geç
-            delay(1500)
-            loadNextQuestion()
+            // Kısa bir gecikme sonrası bir sonraki soruya geç veya quiz'i tamamla
+            delay(2000)
+            
+            // Son soru mu kontrol et (state'i tekrar oku)
+            val finalState = _uiState.value
+            if (finalState.currentQuestionNumber >= finalState.totalQuestions) {
+                completeQuiz()
+            } else {
+                loadNextQuestion()
+            }
         }
+    }
+    
+    private fun completeQuiz() {
+        viewModelScope.launch {
+            val previousDiff = startDifficulty ?: _uiState.value.previousDifficulty ?: Difficulty.EASY
+            _uiState.value = _uiState.value.copy(
+                isQuizCompleted = true,
+                correctAnswers = correctCount,
+                wrongAnswers = wrongCount,
+                previousDifficulty = previousDiff
+            )
+        }
+    }
+    
+    fun restartQuiz() {
+        correctCount = 0
+        wrongCount = 0
+        
+        // Soru tracking'ini sıfırla (repository'de)
+        com.alperenturker.englishcardgame.core.data.di.AppModule.resetQuestionTracking(
+            categoryId = category.id,
+            difficulty = _uiState.value.difficulty
+        )
+        
+        _uiState.value = _uiState.value.copy(
+            isQuizCompleted = false,
+            currentQuestionNumber = 0,
+            correctAnswers = 0,
+            wrongAnswers = 0,
+            selectedAnswerId = null,
+            isAnswerCorrect = null,
+            showFeedback = false
+        )
+        loadNextQuestion()
     }
     
     fun retry() {
         loadNextQuestion()
+    }
+    
+    fun finishQuiz(onFinish: () -> Unit) {
+        onFinish()
     }
 }
 

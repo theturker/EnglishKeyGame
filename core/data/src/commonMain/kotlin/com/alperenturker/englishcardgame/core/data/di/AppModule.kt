@@ -60,9 +60,17 @@ object AppModule {
         LocalUserProgressDataSourceImpl(settings, json)
     }
     
-    // Repositories
-    val questionRepository: QuestionRepository by lazy {
+    // Repository Implementation (singleton)
+    private val questionRepositoryImplInstance: QuestionRepositoryImpl by lazy {
         QuestionRepositoryImpl(groqRemoteDataSource, localQuestionDataSource)
+    }
+    
+    // Repositories
+    val questionRepository: QuestionRepository = questionRepositoryImplInstance
+    
+    // Expose reset method
+    fun resetQuestionTracking(categoryId: String, difficulty: com.alperenturker.englishcardgame.core.domain.model.Difficulty) {
+        questionRepositoryImplInstance.resetQuestionTracking(categoryId, difficulty)
     }
     
     val userProgressRepository: UserProgressRepository by lazy {

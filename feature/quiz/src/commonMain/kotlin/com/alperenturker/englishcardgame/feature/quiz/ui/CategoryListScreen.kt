@@ -51,22 +51,26 @@ fun CategoryListScreen(
             Spacer(modifier = Modifier.height(60.dp))
             
             Text(
-                text = "English Quiz",
+                text = "🎯 English Quiz",
                 style = MaterialTheme.typography.displayLarge.copy(
                     fontWeight = FontWeight.Bold,
                     color = Color.White,
-                    fontSize = 42.sp
+                    fontSize = 48.sp
                 ),
+                textAlign = TextAlign.Center,
                 modifier = Modifier.padding(horizontal = 24.dp)
             )
             
             Text(
-                text = "Kategorilerden birini seçin",
+                text = "Kategorilerden birini seçin ve testini başlat!",
                 style = MaterialTheme.typography.titleMedium.copy(
-                    color = Color.White.copy(alpha = 0.9f),
+                    color = Color.White.copy(alpha = 0.95f),
                     fontSize = 18.sp
                 ),
-                modifier = Modifier.padding(top = 8.dp, bottom = 32.dp)
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .padding(horizontal = 32.dp)
+                    .padding(top = 12.dp, bottom = 36.dp)
             )
             
             when {
@@ -139,13 +143,27 @@ fun CategoryCard(
     category: Category,
     onClick: () -> Unit
 ) {
+    val gradients = listOf(
+        listOf(Color(0xFF667eea), Color(0xFF764ba2)),
+        listOf(Color(0xFFf093fb), Color(0xFFf5576c)),
+        listOf(Color(0xFF4facfe), Color(0xFF00f2fe)),
+        listOf(Color(0xFF43e97b), Color(0xFF38f9d7)),
+        listOf(Color(0xFFfa709a), Color(0xFFfee140)),
+        listOf(Color(0xFF30cfd0), Color(0xFF330867))
+    )
+    
+    val gradientIndex = (category.id.hashCode() % gradients.size).let { 
+        if (it < 0) -it else it 
+    }
+    val gradientColors = gradients[gradientIndex]
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(160.dp)
+            .height(180.dp)
             .clickable(onClick = onClick)
-            .shadow(8.dp, RoundedCornerShape(20.dp)),
-        shape = RoundedCornerShape(20.dp),
+            .shadow(12.dp, RoundedCornerShape(24.dp)),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.White
         )
@@ -155,13 +173,10 @@ fun CategoryCard(
                 .fillMaxSize()
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFFf093fb),
-                            Color(0xFFf5576c)
-                        )
+                        colors = gradientColors
                     )
                 )
-                .padding(16.dp),
+                .padding(20.dp),
             contentAlignment = Alignment.Center
         ) {
             Column(
@@ -170,14 +185,15 @@ fun CategoryCard(
             ) {
                 Text(
                     text = category.icon ?: "📚",
-                    fontSize = 48.sp,
-                    modifier = Modifier.padding(bottom = 8.dp)
+                    fontSize = 56.sp,
+                    modifier = Modifier.padding(bottom = 12.dp)
                 )
                 Text(
                     text = category.name,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = Color.White,
+                        fontSize = 20.sp
                     ),
                     textAlign = TextAlign.Center
                 )
