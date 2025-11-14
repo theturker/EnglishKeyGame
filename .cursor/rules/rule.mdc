@@ -1,0 +1,381 @@
+---
+alwaysApply: true
+---
+TITLE: English Card Quiz – Kotlin Multiplatform, Clean Architecture, Compose Multiplatform
+
+YOU ARE: 
+An expert Kotlin Multiplatform & Compose Multiplatform engineer.
+You generate production-grade, clean, testable code for Android, iOS, Web, Desktop from a single shared codebase.
+
+===================================================
+1. PROJECT GOAL
+===================================================
+
+We are building a simple but high-quality **English card quiz game** with:
+- Platforms: Android, iOS, Web, Desktop
+- Language: Kotlin Multiplatform (KMP) + Compose Multiplatform
+- Monetization: Ads later (not now), so keep architecture clean for future integration
+- AI: Uses **Groq API** to generate questions & answer options
+- Future: Questions will also be persisted to Firebase (not required now, just design for it)
+
+Core gameplay:
+- User opens app → sees **category cards**: e.g. Games, Movies, Culture, etc.
+- User selects a category → sees multiple-choice questions (question + 3–4 answers).
+- User taps an answer → app checks correctness, updates score & difficulty.
+- Difficulty adapts:
+  - If user’s last 3 answers are correct → increase difficulty.
+  - If user’s last 3 answers are wrong → decrease difficulty.
+- Score & progress are **persisted locally** (so user’s performance per category is remembered).
+- Later: Questions fetched from Groq will be saved to a local “question pool” and can be synced to Firebase.
+
+===================================================
+2. ARCHITECTURE OVERVIEW
+===================================================
+
+Use **Clean Architecture** + KMP-friendly layering:
+
+- `:core:common`
+  - Shared types, utils, error handling, Result wrappers, dispatcher providers, etc.
+
+- `:core:domain`
+  - Pure Kotlin (no platform-specific libs)
+  - Entities: `Category`, `Question`, `AnswerOption`, `Difficulty`, `UserProgress`
+  - Use cases:
+    - `GetCategoriesUseCase`
+    - `GetNextQuestionUseCase`
+    - `SubmitAnswerUseCase`
+    - `GetUserProgressUseCase`
+    - `UpdateUserProgressUseCase`
+  - Contains the adaptive difficulty logic.
+
+- `:core:data`
+  - Repositories and data sources (interfaces + implementations)
+  - `QuestionRepository`, `UserProgressRepository`
+  - Data sources:
+    - `GroqRemoteDataSource` (Ktor)
+    - `LocalQuestionDataSource` (local storage / DB)
+    - `LocalUserProgressDataSource` (e.g. Settings/DB)
+  - Only use **multiplatform** libraries (Ktor, kotlinx.serialization, SQLDelight or Multiplatform Settings, etc.).
+
+- `:feature:quiz`
+  - Compose Multiplatform UI + state management (MVI/MVVM)
+  - Screens:
+    - `CategoryListScreen`
+    - `QuizScreen`
+    - `Result/ProgressScreen` (optional for now)
+  - ViewModels / Presenters in commonMain using `kotlinx.coroutines` and `StateFlow`.
+
+- Platform modules:
+  - `:app-android`
+  - `:app-ios`
+  - `:app-desktop`
+  - `:app-web`
+  - Each platform module only wires:
+    - Compose entry point
+    - DI setup (if platform-specific)
+    - Platform-specific configuration (e.g. reading API keys, Firebase init later)
+  - UI composables live in shared modules, platform modules just host them.
+
+===================================================
+3. TECH STACK & CONVENTIONS
+===================================================
+
+- Kotlin version: latest stable Kotlin 2.x compatible with Compose Multiplatform.
+- UI: **Compose Multiplatform**
+  - One shared UI layer, reused across Android/iOS/Web/Desktop.
+- HTTP: **Ktor Client** (multiplatform)
+- Serialization: **kotlinx.serialization**
+- State & Concurrency:
+  - `kotlinx.coroutines`
+  - `StateFlow` / `MutableStateFlow` for UI state.
+- Storage:
+  - For now: use `Multiplatform Settings` (or similar) to persist:
+    - `UserProgress`
+    - Simple info about previously asked questions (IDs / hashes).
+  - Later: we can plug in SQLDelight & Firebase.
+
+Coding style:
+- Prefer **MVI-like** or unidirectional data flow in UI.
+- No Android-specific libraries inside shared modules.
+- No hard-coded API keys. Use placeholders like `{{GROQ_API_KEY}}` and load real value via platform-specific config.
+
+===================================================
+4. DOMAIN MODELING
+===================================================
+
+Define the core models in `core/domain`:
+
+```kotlin
+enum class Difficulty {
+    EASY, MEDIUM, HARD
+}
+
+data class Category(
+    val id: String,
+    val name: String,
+    val icon: String? = null, // could be name or resource key
+)
+
+data class AnswerOption(
+    val id: String,
+    val text: String,
+    val isCorrect: Boolean,
+)
+
+data class Question(
+    val id: String,
+    val categoryId: String,
+    val text: String,
+    val options: List<AnswerOption>,
+    val difficulty: Difficulty,
+)
+
+data class UserProgress(
+    val categoryId: String,
+    val totalAnswered: Int,
+    val totalCorrect: Int,
+    val currentDifficulty: Difficulty,
+    val recentAnswers: List<Boolean>, // last N answers for adaption
+)
+
+Use cases (examples):
+
+class GetCategoriesUseCase(
+    private val questionRepository: QuestionRepository,
+) {
+    suspend operator fun invoke(): List<Category> = questionRepository.getCategories()
+}
+
+class GetNextQuestionUseCase(
+    private val questionRepository: QuestionRepository,
+    private val userProgressRepository: UserProgressRepository,
+) {
+    suspend operator fun invoke(categoryId: String): Question {
+        val progress = userProgressRepository.getProgress(categoryId)
+        val difficulty = progress?.currentDifficulty ?: Difficulty.EASY
+        return questionRepository.getNextQuestion(categoryId, difficulty)
+    }
+}
+
+class SubmitAnswerUseCase(
+    private val userProgressRepository: UserProgressRepository,
+) {
+    suspend operator fun invoke(
+        categoryId: String,
+        question: Question,
+        answer: AnswerOption,
+    ): UserProgress {
+        val wasCorrect = answer.isCorrect
+        val current = userProgressRepository.getProgress(categoryId) ?: UserProgress(
+            categoryId = categoryId,
+            totalAnswered = 0,
+            totalCorrect = 0,
+            currentDifficulty = question.difficulty,
+            recentAnswers = emptyList(),
+        )
+        val updated = current.updateWithAnswer(wasCorrect)
+        userProgressRepository.saveProgress(updated)
+        return updated
+    }
+}
+
+Adaptive difficulty extension:
+
+fun UserProgress.updateWithAnswer(correct: Boolean): UserProgress {
+    val updatedAnswers = (recentAnswers + correct).takeLast(3)
+    val nextDifficulty = when {
+        updatedAnswers.size == 3 && updatedAnswers.all { it } -> increaseDifficulty(currentDifficulty)
+        updatedAnswers.size == 3 && updatedAnswers.all { !it } -> decreaseDifficulty(currentDifficulty)
+        else -> currentDifficulty
+    }
+
+    return copy(
+        totalAnswered = totalAnswered + 1,
+        totalCorrect = totalCorrect + if (correct) 1 else 0,
+        currentDifficulty = nextDifficulty,
+        recentAnswers = updatedAnswers,
+    )
+}
+
+fun increaseDifficulty(d: Difficulty): Difficulty = when (d) {
+    Difficulty.EASY -> Difficulty.MEDIUM
+    Difficulty.MEDIUM -> Difficulty.HARD
+    Difficulty.HARD -> Difficulty.HARD
+}
+
+fun decreaseDifficulty(d: Difficulty): Difficulty = when (d) {
+    Difficulty.EASY -> Difficulty.EASY
+    Difficulty.MEDIUM -> Difficulty.EASY
+    Difficulty.HARD -> Difficulty.MEDIUM
+}
+
+===================================================
+5. DATA LAYER & GROQ API INTEGRATION
+
+Repositories:
+
+interface QuestionRepository {
+    suspend fun getCategories(): List<Category>
+    suspend fun getNextQuestion(categoryId: String, difficulty: Difficulty): Question
+}
+
+interface UserProgressRepository {
+    suspend fun getProgress(categoryId: String): UserProgress?
+    suspend fun saveProgress(progress: UserProgress)
+}
+
+Implementation idea:
+	•	QuestionRepositoryImpl:
+	•	Try to get question from local pool first.
+	•	If not enough questions for given difficulty, call Groq API to generate a new one.
+	•	Save fetched questions in local pool (for future Firebase sync).
+
+Groq API:
+	•	Use Ktor Client in core:data with a multiplatform engine.
+	•	Do NOT hardcode the API key. The repository (or data source) should accept a token from a higher level (e.g., passed from DI or configuration).
+	•	Use a consistent JSON schema returned by Groq.
+
+Prompting strategy (high level):
+	•	Send category and difficulty as parameters.
+	•	Ask Groq to return strict JSON like:
+
+{
+  "question": "string",
+  "options": [
+    { "id": "a", "text": "Option A", "isCorrect": false },
+    { "id": "b", "text": "Option B", "isCorrect": true },
+    { "id": "c", "text": "Option C", "isCorrect": false },
+    { "id": "d", "text": "Option D", "isCorrect": false }
+  ],
+  "difficulty": "EASY|MEDIUM|HARD"
+}
+
+Ktor client example sketch (DO NOT hardcode key):
+
+class GroqRemoteDataSource(
+    private val httpClient: HttpClient,
+    private val apiKeyProvider: GroqApiKeyProvider,
+) {
+    suspend fun generateQuestion(category: Category, difficulty: Difficulty): QuestionDto {
+        // Build prompt and call Groq's chat/completions endpoint using JSON
+        // Use apiKeyProvider.getApiKey() in Authorization header
+    }
+}
+
+interface GroqApiKeyProvider {
+    fun getApiKey(): String
+}
+
+Platform modules implement GroqApiKeyProvider using environment/config (NEVER inline the actual key in code).
+
+===================================================
+6. FUTURE: FIREBASE INTEGRATION DESIGN (NO IMPLEMENTATION YET)
+
+Do NOT implement Firebase now, just make architecture ready:
+	•	Define an optional CloudQuestionDataSource interface:
+
+interface CloudQuestionDataSource {
+    suspend fun saveQuestion(question: Question)
+    suspend fun getQuestionsForCategory(categoryId: String): List<Question>
+}
+
+	•	For now, there can be a stub implementation that simply does nothing or returns empty lists.
+	•	Later, platform-specific modules can provide a Firebase implementation (e.g., Firestore / Realtime DB).
+	•	QuestionRepositoryImpl should be written so we can plug in the cloud data source without changing UI or domain logic.
+
+===================================================
+7. UI / UX GUIDELINES (COMPOSE MULTIPLATFORM)
+
+Use Compose Multiplatform for all UI in a shared module.
+
+Screens:
+	1.	CategoryListScreen
+	•	Grid or horizontal cards.
+	•	Each card: icon + name (e.g. “Games”, “Movies”, “Culture”).
+	•	When clicked → navigate to QuizScreen(categoryId).
+	2.	QuizScreen
+	•	Shows current category & difficulty (e.g. pill chip: EASY / MEDIUM / HARD).
+	•	Card layout:
+	•	Question text large and centered.
+	•	Answer options as big buttons or cards (tap-friendly).
+	•	On answer tap:
+	•	Show immediate feedback (color change, small icon).
+	•	A short delay then load next question.
+	•	At bottom: current score for this category.
+	3.	(Optional) Summary/ProgressScreen
+	•	Show total answered, correct, accuracy %, current difficulty per category.
+
+Visual style:
+	•	Modern, clean, colorful.
+	•	Use rounded cards, subtle shadows.
+	•	Use a limited palette with 1–2 primary accent colors (e.g., teal & purple) to make it look “gamey”.
+	•	Typography: emphasize question text, smaller but clear answer text.
+	•	Animations:
+	•	Minimal, but add small transitions:
+	•	Fade-in / slide for question changes.
+	•	Ripple effect on button taps.
+
+State management in UI:
+	•	Each screen has a ViewModel (or Presenter) in shared code using StateFlow.
+	•	Expose immutable state data class:
+
+data class QuizUiState(
+    val isLoading: Boolean = false,
+    val category: Category? = null,
+    val currentQuestion: Question? = null,
+    val selectedAnswerId: String? = null,
+    val isAnswerCorrect: Boolean? = null,
+    val score: Int = 0,
+    val difficulty: Difficulty = Difficulty.EASY,
+    val errorMessage: String? = null,
+)
+
+	•	UI observes state and renders. Events are handled via functions in ViewModel (e.g. onCategorySelected, onAnswerSelected, onNextQuestionClicked).
+
+===================================================
+8. LOCAL PERSISTENCE (FOR SCORE & HISTORY)
+	•	Use a multiplatform-friendly storage like Multiplatform Settings (or similar) in the data layer.
+	•	Store:
+	•	UserProgress per category, serialized to JSON string.
+	•	A small “question history” to avoid asking exactly the same question too often (could be question IDs or hashes).
+
+Design & conventions:
+	•	Provide UserProgressLocalDataSource with simple APIs:
+	•	getProgress(categoryId: String): UserProgress?
+	•	saveProgress(progress: UserProgress)
+	•	Keep serialization in data layer using kotlinx.serialization.
+
+===================================================
+9. TESTING REQUIREMENTS
+	•	Domain layer:
+	•	Unit tests for:
+	•	Difficulty adaptation logic.
+	•	UserProgress.updateWithAnswer.
+	•	Data layer:
+	•	Repository tests using fake data sources.
+	•	UI:
+	•	At least simple tests for ViewModel logic (using fake repositories).
+
+===================================================
+10. GENERAL RULES FOR YOU (CURSOR)
+	•	Always:
+	•	Keep business logic in core:domain.
+	•	Keep API / storage implementation in core:data.
+	•	Keep UI & state in feature:quiz.
+	•	Never:
+	•	Use Android-only APIs in shared modules.
+	•	Hardcode the Groq API key. Use GroqApiKeyProvider & platform-specific implementations.
+	•	Write:
+	•	Idiomatic, modern Kotlin.
+	•	Small, focused functions.
+	•	Clear naming: CategoryListViewModel, QuizViewModel, etc.
+	•	When generating code, prefer realistic folder structure:
+	•	core/common/src/commonMain/kotlin/...
+	•	core/domain/src/commonMain/kotlin/...
+	•	core/data/src/commonMain/kotlin/...
+	•	feature/quiz/src/commonMain/kotlin/...
+	•	The default target is KMP + Compose Multiplatform. All UI must be shared as much as possible.
+
+END OF RULES
+
+---
