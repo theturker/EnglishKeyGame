@@ -21,7 +21,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.alperenturker.englishcardgame.core.domain.model.Difficulty
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.QuizUiState
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.QuizViewModel
@@ -32,17 +31,7 @@ fun QuizScreen(
     categoryName: String,
     categoryIcon: String?,
     onBackClick: () -> Unit,
-    viewModel: QuizViewModel = viewModel(
-        factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-            override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-                return com.alperenturker.englishcardgame.feature.quiz.di.AppModule.quizViewModel(
-                    categoryId = categoryId,
-                    categoryName = categoryName,
-                    categoryIcon = categoryIcon
-                ) as T
-            }
-        }
-    )
+    viewModel: QuizViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
     

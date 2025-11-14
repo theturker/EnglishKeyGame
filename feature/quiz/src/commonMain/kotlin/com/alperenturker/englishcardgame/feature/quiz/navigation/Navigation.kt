@@ -3,12 +3,11 @@ package com.alperenturker.englishcardgame.feature.quiz.navigation
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.alperenturker.englishcardgame.feature.quiz.di.AppModule
 import com.alperenturker.englishcardgame.feature.quiz.ui.CategoryListScreen
 import com.alperenturker.englishcardgame.feature.quiz.ui.QuizScreen
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.CategoryListViewModel
-//todo
+
 sealed class Screen {
     object CategoryList : Screen()
     data class Quiz(val categoryId: String, val categoryName: String, val categoryIcon: String?) : Screen()
@@ -18,6 +17,9 @@ sealed class Screen {
 fun AppNavigation(modifier: Modifier = Modifier) {
     var currentScreen by remember { mutableStateOf<Screen>(Screen.CategoryList) }
     
+    // Create ViewModel using remember for cross-platform compatibility
+    val categoryListViewModel = remember { AppModule.categoryListViewModel() }
+    
     Box(modifier = modifier) {
         when (val screen = currentScreen) {
         is Screen.CategoryList -> {
@@ -25,24 +27,28 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                 onCategorySelected = { categoryId, categoryName, categoryIcon ->
                     currentScreen = Screen.Quiz(categoryId, categoryName, categoryIcon)
                 },
-                viewModel = viewModel(
-                    factory = object : androidx.lifecycle.ViewModelProvider.Factory {
-                        override fun <T : androidx.lifecycle.ViewModel> create(modelClass: Class<T>): T {
-                            return AppModule.categoryListViewModel() as T
-                        }
-                    }
-                )
+                viewModel = categoryListViewModel
             )
         }
         
         is Screen.Quiz -> {
+            // Create QuizViewModel with screen parameters using key to recreate on screen change
+            val quizViewModel = remember(screen.categoryId) {
+                AppModule.quizViewModel(
+                    categoryId = screen.categoryId,
+                    categoryName = screen.categoryName,
+                    categoryIcon = screen.categoryIcon
+                )
+            }
+            
             QuizScreen(
                 categoryId = screen.categoryId,
                 categoryName = screen.categoryName,
                 categoryIcon = screen.categoryIcon,
                 onBackClick = {
                     currentScreen = Screen.CategoryList
-                }
+                },
+                viewModel = quizViewModel
             )
         }
         }

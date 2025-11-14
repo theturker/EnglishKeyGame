@@ -55,6 +55,7 @@ kotlin {
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.kotlinx.datetime)
         }
     }
 }
@@ -98,6 +99,9 @@ compose.desktop {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.alperenturker.englishcardgame"
             packageVersion = "1.0.0"
+            
+            // Include all dependencies in the distribution
+            modules("java.instrument", "java.logging", "java.xml", "jdk.unsupported")
         }
     }
 }

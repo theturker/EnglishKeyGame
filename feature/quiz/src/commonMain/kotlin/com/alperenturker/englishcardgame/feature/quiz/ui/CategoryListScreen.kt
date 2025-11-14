@@ -22,14 +22,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.alperenturker.englishcardgame.core.domain.model.Category
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.CategoryListViewModel
 
 @Composable
 fun CategoryListScreen(
     onCategorySelected: (String, String, String?) -> Unit,
-    viewModel: CategoryListViewModel = viewModel()
+    viewModel: CategoryListViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
