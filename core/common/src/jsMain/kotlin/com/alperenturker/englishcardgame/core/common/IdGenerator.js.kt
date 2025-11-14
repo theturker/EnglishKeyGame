@@ -16,6 +16,6 @@ actual object IdGenerator {
 }
 
 actual fun getCurrentTimeMillis(): Long {
-    return kotlinx.browser.window.Date.now().toLong()
+    return kotlin.js.Date.now().toLong()
 }
 
