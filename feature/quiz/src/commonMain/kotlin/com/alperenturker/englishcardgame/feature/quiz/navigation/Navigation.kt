@@ -8,7 +8,7 @@ import com.alperenturker.englishcardgame.feature.quiz.di.AppModule
 import com.alperenturker.englishcardgame.feature.quiz.ui.CategoryListScreen
 import com.alperenturker.englishcardgame.feature.quiz.ui.QuizScreen
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.CategoryListViewModel
-
+//todo
 sealed class Screen {
     object CategoryList : Screen()
     data class Quiz(val categoryId: String, val categoryName: String, val categoryIcon: String?) : Screen()
