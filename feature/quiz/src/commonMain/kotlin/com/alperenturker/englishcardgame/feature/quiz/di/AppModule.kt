@@ -6,6 +6,7 @@ import com.alperenturker.englishcardgame.core.domain.usecase.GetNextQuestionUseC
 import com.alperenturker.englishcardgame.core.domain.usecase.GetUserProgressUseCase
 import com.alperenturker.englishcardgame.core.domain.usecase.SubmitAnswerUseCase
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.CategoryListViewModel
+import com.alperenturker.englishcardgame.feature.quiz.viewmodel.LevelTestViewModel
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.QuizViewModel
 
 object AppModule {
@@ -44,6 +45,10 @@ object AppModule {
             categoryName = categoryName,
             categoryIcon = categoryIcon
         )
+    }
+    
+    fun levelTestViewModel(): LevelTestViewModel {
+        return LevelTestViewModel()
     }
 }
 

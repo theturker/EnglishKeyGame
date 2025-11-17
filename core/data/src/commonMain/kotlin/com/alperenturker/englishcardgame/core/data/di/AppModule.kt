@@ -4,10 +4,14 @@ import com.alperenturker.englishcardgame.core.data.config.GroqApiKeyProvider
 import com.alperenturker.englishcardgame.core.data.datasource.GroqRemoteDataSource
 import com.alperenturker.englishcardgame.core.data.datasource.LocalQuestionDataSource
 import com.alperenturker.englishcardgame.core.data.datasource.LocalQuestionDataSourceImpl
+import com.alperenturker.englishcardgame.core.data.datasource.AppSettingsDataSource
+import com.alperenturker.englishcardgame.core.data.datasource.AppSettingsDataSourceImpl
 import com.alperenturker.englishcardgame.core.data.datasource.LocalUserProgressDataSource
 import com.alperenturker.englishcardgame.core.data.datasource.LocalUserProgressDataSourceImpl
+import com.alperenturker.englishcardgame.core.data.repository.LevelTestRepositoryImpl
 import com.alperenturker.englishcardgame.core.data.repository.QuestionRepositoryImpl
 import com.alperenturker.englishcardgame.core.data.repository.UserProgressRepositoryImpl
+import com.alperenturker.englishcardgame.core.domain.repository.LevelTestRepository
 import com.alperenturker.englishcardgame.core.domain.repository.QuestionRepository
 import com.alperenturker.englishcardgame.core.domain.repository.UserProgressRepository
 import io.ktor.client.HttpClient
@@ -60,6 +64,10 @@ object AppModule {
         LocalUserProgressDataSourceImpl(settings, json)
     }
     
+    private val appSettingsDataSource: AppSettingsDataSource by lazy {
+        AppSettingsDataSourceImpl(settings)
+    }
+    
     // Repository Implementation (singleton)
     private val userProgressRepositoryInstance: UserProgressRepository by lazy {
         UserProgressRepositoryImpl(localUserProgressDataSource)
@@ -78,5 +86,11 @@ object AppModule {
     }
     
     val userProgressRepository: UserProgressRepository = userProgressRepositoryInstance
+    
+    val levelTestRepository: LevelTestRepository by lazy {
+        LevelTestRepositoryImpl()
+    }
+    
+    val appSettings: AppSettingsDataSource = appSettingsDataSource
 }
 
