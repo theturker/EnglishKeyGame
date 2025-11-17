@@ -77,7 +77,8 @@ fun CategoryListScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(horizontal = 20.dp),
+                .padding(horizontal = 20.dp)
+                .padding(top = 8.dp), // Safe area padding
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile Button

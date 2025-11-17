@@ -10,6 +10,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +32,11 @@ fun ProfileScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     
+    // Refresh data when screen is shown
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
+    
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -44,11 +50,24 @@ fun ProfileScreen(
                 )
             )
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
+        if (uiState.isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    color = Color(0xFF4ECDC4),
+                    modifier = Modifier.size(56.dp),
+                    strokeWidth = 5.dp
+                )
+            }
+        } else {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+                    .padding(top = 8.dp) // Safe area padding
+            ) {
             // Header
             Row(
                 modifier = Modifier
@@ -254,6 +273,7 @@ fun ProfileScreen(
             }
             
             Spacer(modifier = Modifier.height(32.dp))
+            }
         }
     }
 }

@@ -47,6 +47,12 @@ class ProfileViewModel : ViewModel() {
                 // Get all category progress
                 val allProgress = userProgressRepository.getAllProgress()
                 
+                // Debug: Log progress data
+                println("ProfileViewModel: Found ${allProgress.size} category progress entries")
+                allProgress.forEach { progress ->
+                    println("ProfileViewModel: Category ${progress.categoryId} - Answered: ${progress.totalAnswered}, Correct: ${progress.totalCorrect}, Difficulty: ${progress.currentDifficulty}")
+                }
+                
                 // Calculate totals
                 val totalAnswered = allProgress.sumOf { it.totalAnswered }
                 val totalCorrect = allProgress.sumOf { it.totalCorrect }

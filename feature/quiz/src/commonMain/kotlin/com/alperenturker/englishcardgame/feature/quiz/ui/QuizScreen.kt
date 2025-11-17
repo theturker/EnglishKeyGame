@@ -53,7 +53,9 @@ fun QuizScreen(
             )
     ) {
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 8.dp) // Safe area padding
         ) {
             // Header - Only show if not completed
             if (!uiState.isQuizCompleted) {
@@ -491,17 +493,12 @@ fun AnswerOptionCard(
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(90.dp)
+            .wrapContentHeight()
             .graphicsLayer {
                 scaleX = scale
                 scaleY = scale
             }
-            .clickable(enabled = !showFeedback, onClick = onClick)
-            .shadow(
-                elevation = if (isSelected || showFeedback) 12.dp else 6.dp,
-                shape = RoundedCornerShape(20.dp),
-                spotColor = borderColor.copy(alpha = 0.5f)
-            ),
+            .clickable(enabled = !showFeedback, onClick = onClick),
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
@@ -513,24 +510,28 @@ fun AnswerOptionCard(
     ) {
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth()
+                .wrapContentHeight()
                 .background(
                     brush = Brush.horizontalGradient(colors = gradientColors)
                 )
-                .padding(horizontal = 20.dp, vertical = 16.dp),
-            contentAlignment = Alignment.Center
+                .padding(horizontal = 20.dp, vertical = 20.dp)
         ) {
             Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .wrapContentHeight(),
+                verticalAlignment = Alignment.Top,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row(
-                    modifier = Modifier.weight(1f),
-                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .weight(1f)
+                        .wrapContentHeight(),
+                    verticalAlignment = Alignment.Top,
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Option ID Badge
+                    // Option ID Badge - fixed size, top aligned
                     Box(
                         modifier = Modifier
                             .size(48.dp)
@@ -569,6 +570,7 @@ fun AnswerOptionCard(
                         )
                     }
                     
+                    // Text - takes remaining space, top aligned
                     Text(
                         text = option.text,
                         style = MaterialTheme.typography.bodyLarge.copy(
@@ -581,7 +583,9 @@ fun AnswerOptionCard(
                                 else -> Color(0xFF1A1A2E)
                             }
                         ),
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
+                            .wrapContentHeight()
                     )
                 }
                 

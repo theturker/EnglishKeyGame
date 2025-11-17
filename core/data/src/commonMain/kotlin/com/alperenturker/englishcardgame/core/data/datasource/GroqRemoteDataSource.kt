@@ -104,27 +104,34 @@ class GroqRemoteDataSource(
     }
     
     private fun buildPrompt(category: Category, difficulty: Difficulty): String {
+        // Randomly select which option should be correct to avoid bias
+        val correctOptions = listOf("a", "b", "c", "d")
+        val correctOption = correctOptions.random()
+        
         return """
             Generate an English vocabulary or grammar question about ${category.name} category with ${difficulty.name} difficulty level.
             
             The question should be educational and appropriate for English learning.
             
+            IMPORTANT: The correct answer MUST be option "${correctOption.uppercase()}" (${correctOption}). Randomly distribute correct answers across all options (a, b, c, d) in different questions.
+            
             Return a JSON object with the following exact structure:
             {
                 "question": "Your question text here",
                 "options": [
-                    {"id": "a", "text": "Option A text", "isCorrect": false},
-                    {"id": "b", "text": "Option B text", "isCorrect": true},
-                    {"id": "c", "text": "Option C text", "isCorrect": false},
-                    {"id": "d", "text": "Option D text", "isCorrect": false}
+                    {"id": "a", "text": "Option A text", "isCorrect": ${correctOption == "a"}},
+                    {"id": "b", "text": "Option B text", "isCorrect": ${correctOption == "b"}},
+                    {"id": "c", "text": "Option C text", "isCorrect": ${correctOption == "c"}},
+                    {"id": "d", "text": "Option D text", "isCorrect": ${correctOption == "d"}}
                 ],
                 "difficulty": "${difficulty.name}"
             }
             
             Make sure:
             - The question is clear and concise
-            - Exactly one option has "isCorrect": true
+            - Exactly ONE option has "isCorrect": true (option ${correctOption.uppercase()})
             - All options are plausible but only one is correct
+            - The correct answer is option ${correctOption.uppercase()}
             - Return ONLY the JSON object, no other text
         """.trimIndent()
     }
