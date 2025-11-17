@@ -19,10 +19,15 @@ fun GroqQuestionResponse.toDomain(categoryId: String): Question {
         throw IllegalArgumentException("No options found in Groq response")
     }
     
+    // Soru ID'sini soru metninden hash'leyerek oluştur
+    // Böylece aynı soru metni her zaman aynı ID'ye sahip olur
+    val questionText = question.trim()
+    val questionId = "q_${questionText.hashCode().toString().replace("-", "n")}"
+    
     return Question(
-        id = IdGenerator.generate(),
+        id = questionId,
         categoryId = categoryId,
-        text = question,
+        text = questionText,
         options = optionList.map { it.toDomain() },
         difficulty = difficulty
     )

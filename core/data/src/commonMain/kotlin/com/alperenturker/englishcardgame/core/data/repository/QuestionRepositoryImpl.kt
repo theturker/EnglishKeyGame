@@ -7,10 +7,12 @@ import com.alperenturker.englishcardgame.core.domain.model.Category
 import com.alperenturker.englishcardgame.core.domain.model.Difficulty
 import com.alperenturker.englishcardgame.core.domain.model.Question
 import com.alperenturker.englishcardgame.core.domain.repository.QuestionRepository
+import com.alperenturker.englishcardgame.core.domain.repository.UserProgressRepository
 
 class QuestionRepositoryImpl(
     private val groqRemoteDataSource: GroqRemoteDataSource,
-    private val localQuestionDataSource: LocalQuestionDataSource
+    private val localQuestionDataSource: LocalQuestionDataSource,
+    private val userProgressRepository: UserProgressRepository
 ) : QuestionRepository {
     
     // Her kategori+difficulty için bu session'da sorulmuş soruların ID'lerini takip et
@@ -38,51 +40,47 @@ class QuestionRepositoryImpl(
         val key = getKey(categoryId, difficulty)
         val askedIds = askedQuestionIds.getOrPut(key) { mutableSetOf() }
         
+        // Kullanıcının daha önce cevapladığı soruları al (kalıcı)
+        val userProgress = userProgressRepository.getProgress(categoryId)
+        val answeredQuestionIds = userProgress?.answeredQuestionIds ?: emptySet()
+        
+        // Hem session'da sorulan hem de kalıcı olarak cevaplanan soruları birleştir
+        val allExcludedIds = askedIds + answeredQuestionIds
+        
         val category = getCategories().find { it.id == categoryId }
             ?: throw IllegalArgumentException("Category not found: $categoryId")
         
         // Her zaman Groq API'den yeni soru oluştur (farklı sorular garantili)
         // Ancak aynı soru tekrar gelirse cache'den kullan
-        var maxRetries = 3
+        var maxRetries = 5 // Artırıldı çünkü cevaplanan sorular da filtreleniyor
         var question: Question? = null
         
         while (maxRetries > 0 && question == null) {
             val groqResponse = groqRemoteDataSource.generateQuestion(category, difficulty)
             val newQuestion = groqResponse.toDomain(categoryId)
             
-            // Bu soru daha önce sorulmuş mu kontrol et
-            if (newQuestion.id !in askedIds) {
-                // Aynı metin içeriğine sahip soru var mı kontrol et (duplicate)
-                val localQuestions = localQuestionDataSource.getQuestionsForCategory(categoryId, difficulty)
-                val existingQuestion = localQuestions.find { 
-                    it.text.trim().equals(newQuestion.text.trim(), ignoreCase = true)
-                }
-                
-                if (existingQuestion == null) {
-                    // Yeni ve benzersiz soru
-                    localQuestionDataSource.saveQuestion(newQuestion)
-                    askedIds.add(newQuestion.id)
-                    question = newQuestion
-                } else {
-                    // Aynı soru metni var ama farklı ID - existing olanı kullan
-                    askedIds.add(existingQuestion.id)
-                    question = existingQuestion
-                }
+            // Bu soru daha önce sorulmuş veya cevaplanmış mı kontrol et
+            // Artık ID soru metninden hash'lendiği için aynı soru her zaman aynı ID'ye sahip
+            if (newQuestion.id !in allExcludedIds) {
+                // Yeni ve benzersiz soru
+                localQuestionDataSource.saveQuestion(newQuestion)
+                askedIds.add(newQuestion.id)
+                question = newQuestion
             } else {
-                // Bu ID daha önce sorulmuş, tekrar deneme sayısını azalt
+                // Bu soru daha önce sorulmuş veya cevaplanmış, yeni soru üret
                 maxRetries--
             }
         }
         
-        // Eğer hala soru yoksa (çok nadir durum), cache'den sorulmamış bir soru seç
+        // Eğer hala soru yoksa (çok nadir durum), cache'den sorulmamış ve cevaplanmamış bir soru seç
         if (question == null) {
             val localQuestions = localQuestionDataSource.getQuestionsForCategory(categoryId, difficulty)
-            val unansweredQuestions = localQuestions.filter { it.id !in askedIds }
+            val unansweredQuestions = localQuestions.filter { it.id !in allExcludedIds }
             if (unansweredQuestions.isNotEmpty()) {
                 question = unansweredQuestions.random()
                 askedIds.add(question.id)
             } else {
-                // Cache'de de soru yoksa, Groq'dan geleni direkt kullan
+                // Cache'de de soru yoksa, Groq'dan geleni direkt kullan (son çare)
                 val groqResponse = groqRemoteDataSource.generateQuestion(category, difficulty)
                 question = groqResponse.toDomain(categoryId)
                 localQuestionDataSource.saveQuestion(question)

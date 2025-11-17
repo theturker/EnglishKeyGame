@@ -9,7 +9,8 @@ data class UserProgressSerializable(
     val totalAnswered: Int,
     val totalCorrect: Int,
     val currentDifficulty: String,
-    val recentAnswers: List<Boolean>
+    val recentAnswers: List<Boolean>,
+    val answeredQuestionIds: List<String> = emptyList() // Set'i List'e çeviriyoruz (serialization için)
 )
 
 fun UserProgress.toSerializable(): UserProgressSerializable {
@@ -18,7 +19,8 @@ fun UserProgress.toSerializable(): UserProgressSerializable {
         totalAnswered = totalAnswered,
         totalCorrect = totalCorrect,
         currentDifficulty = currentDifficulty.name,
-        recentAnswers = recentAnswers
+        recentAnswers = recentAnswers,
+        answeredQuestionIds = answeredQuestionIds.toList()
     )
 }
 
@@ -34,7 +36,8 @@ fun UserProgressSerializable.toDomain(): UserProgress {
         totalAnswered = totalAnswered,
         totalCorrect = totalCorrect,
         currentDifficulty = difficulty,
-        recentAnswers = recentAnswers
+        recentAnswers = recentAnswers,
+        answeredQuestionIds = answeredQuestionIds.toSet()
     )
 }
 

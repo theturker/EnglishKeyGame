@@ -5,7 +5,8 @@ data class UserProgress(
     val totalAnswered: Int,
     val totalCorrect: Int,
     val currentDifficulty: Difficulty,
-    val recentAnswers: List<Boolean> // Son N cevap için adaptif zorluk
+    val recentAnswers: List<Boolean>, // Son N cevap için adaptif zorluk
+    val answeredQuestionIds: Set<String> = emptySet() // Cevaplanan soru ID'leri (kalıcı)
 ) {
     val accuracy: Float
         get() = if (totalAnswered > 0) totalCorrect.toFloat() / totalAnswered else 0f
@@ -14,7 +15,7 @@ data class UserProgress(
 /**
  * Yeni bir cevap verildiğinde UserProgress'i günceller ve adaptif zorluk mantığını uygular
  */
-fun UserProgress.updateWithAnswer(correct: Boolean): UserProgress {
+fun UserProgress.updateWithAnswer(correct: Boolean, questionId: String): UserProgress {
     val updatedAnswers = (recentAnswers + correct).takeLast(3)
     
     val nextDifficulty = when {
@@ -30,7 +31,8 @@ fun UserProgress.updateWithAnswer(correct: Boolean): UserProgress {
         totalAnswered = totalAnswered + 1,
         totalCorrect = totalCorrect + if (correct) 1 else 0,
         currentDifficulty = nextDifficulty,
-        recentAnswers = updatedAnswers
+        recentAnswers = updatedAnswers,
+        answeredQuestionIds = answeredQuestionIds + questionId // Cevaplanan soru ID'sini ekle
     )
 }
 

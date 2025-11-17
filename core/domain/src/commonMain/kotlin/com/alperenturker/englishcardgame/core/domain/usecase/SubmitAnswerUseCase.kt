@@ -25,7 +25,7 @@ class SubmitAnswerUseCase(
             recentAnswers = emptyList()
         )
         
-        val updated = current.updateWithAnswer(wasCorrect)
+        val updated = current.updateWithAnswer(wasCorrect, question.id)
         userProgressRepository.saveProgress(updated)
         
         return updated

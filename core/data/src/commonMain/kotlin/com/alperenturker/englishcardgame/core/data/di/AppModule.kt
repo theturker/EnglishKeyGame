@@ -61,8 +61,12 @@ object AppModule {
     }
     
     // Repository Implementation (singleton)
+    private val userProgressRepositoryInstance: UserProgressRepository by lazy {
+        UserProgressRepositoryImpl(localUserProgressDataSource)
+    }
+    
     private val questionRepositoryImplInstance: QuestionRepositoryImpl by lazy {
-        QuestionRepositoryImpl(groqRemoteDataSource, localQuestionDataSource)
+        QuestionRepositoryImpl(groqRemoteDataSource, localQuestionDataSource, userProgressRepositoryInstance)
     }
     
     // Repositories
@@ -73,8 +77,6 @@ object AppModule {
         questionRepositoryImplInstance.resetQuestionTracking(categoryId, difficulty)
     }
     
-    val userProgressRepository: UserProgressRepository by lazy {
-        UserProgressRepositoryImpl(localUserProgressDataSource)
-    }
+    val userProgressRepository: UserProgressRepository = userProgressRepositoryInstance
 }
 
