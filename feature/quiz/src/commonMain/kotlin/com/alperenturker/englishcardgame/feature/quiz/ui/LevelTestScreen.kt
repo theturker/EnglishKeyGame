@@ -169,7 +169,7 @@ fun LevelTestScreen(
                             LevelTestAnswerOption(
                                 option = option,
                                 isSelected = selectedAnswerId == option.id,
-                                onClick = { if (selectedAnswerId == null) onAnswerSelected(option.id) }
+                                onClick = { onAnswerSelected(option.id) }
                             )
                         }
                     }

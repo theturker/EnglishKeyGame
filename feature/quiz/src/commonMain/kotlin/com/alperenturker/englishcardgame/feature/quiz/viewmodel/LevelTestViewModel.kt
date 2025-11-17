@@ -54,9 +54,31 @@ class LevelTestViewModel : ViewModel() {
         val currentState = _uiState.value
         val currentQuestion = currentState.questions.getOrNull(currentState.currentQuestionIndex)
         
-        if (currentQuestion != null && currentState.selectedAnswerId == null) {
-            val isCorrect = answerId == currentQuestion.correctAnswerId
-            val newScore = if (isCorrect) currentState.score + 1 else currentState.score
+        if (currentQuestion != null) {
+            val previousAnswerId = currentState.selectedAnswerId
+            val wasPreviousCorrect = previousAnswerId == currentQuestion.correctAnswerId
+            val isNewCorrect = answerId == currentQuestion.correctAnswerId
+            
+            // Eğer aynı şık tekrar seçilirse değişiklik yapma
+            if (previousAnswerId == answerId) {
+                return
+            }
+            
+            // Skoru güncelle
+            var newScore = currentState.score
+            
+            // Önceki seçim doğruydu ve yeni seçim yanlışsa skor azalt
+            if (wasPreviousCorrect && !isNewCorrect) {
+                newScore = maxOf(0, newScore - 1)
+            }
+            // Önceki seçim yanlıştı ve yeni seçim doğruysa skor artır
+            else if (!wasPreviousCorrect && isNewCorrect) {
+                newScore = newScore + 1
+            }
+            // Önceki seçim yoksa ve yeni seçim doğruysa skor artır
+            else if (previousAnswerId == null && isNewCorrect) {
+                newScore = newScore + 1
+            }
             
             _uiState.value = currentState.copy(
                 selectedAnswerId = answerId,
