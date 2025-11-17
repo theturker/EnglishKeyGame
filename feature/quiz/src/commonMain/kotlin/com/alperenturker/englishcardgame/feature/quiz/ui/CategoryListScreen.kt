@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.alperenturker.englishcardgame.core.common.getTopSafeAreaPadding
 import com.alperenturker.englishcardgame.core.domain.model.Category
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.CategoryListViewModel
 
@@ -33,6 +34,7 @@ fun CategoryListScreen(
     viewModel: CategoryListViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val safeAreaPadding = getTopSafeAreaPadding()
     
     Box(
         modifier = Modifier
@@ -78,7 +80,7 @@ fun CategoryListScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp)
-                .padding(top = 8.dp), // Safe area padding
+                .padding(safeAreaPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Profile Button

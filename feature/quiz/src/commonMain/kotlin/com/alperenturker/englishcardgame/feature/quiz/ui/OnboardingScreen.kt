@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.alperenturker.englishcardgame.core.common.getTopSafeAreaPadding
 
 data class OnboardingPage(
     val title: String,
@@ -52,6 +53,7 @@ fun OnboardingScreen(
     )
     
     var currentPage by remember { mutableStateOf(0) }
+    val safeAreaPadding = getTopSafeAreaPadding()
     
     Box(
         modifier = Modifier
@@ -69,7 +71,7 @@ fun OnboardingScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 8.dp), // Safe area padding
+                .padding(safeAreaPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.weight(1f))

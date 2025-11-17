@@ -25,6 +25,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.alperenturker.englishcardgame.core.common.getTopSafeAreaPadding
 import com.alperenturker.englishcardgame.core.domain.model.Difficulty
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.QuizUiState
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.QuizViewModel
@@ -38,6 +39,7 @@ fun QuizScreen(
     viewModel: QuizViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val safeAreaPadding = getTopSafeAreaPadding()
     
     Box(
         modifier = Modifier
@@ -55,7 +57,7 @@ fun QuizScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 8.dp) // Safe area padding
+                .padding(safeAreaPadding)
         ) {
             // Header - Only show if not completed
             if (!uiState.isQuizCompleted) {

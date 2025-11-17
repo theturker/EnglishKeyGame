@@ -23,6 +23,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.alperenturker.englishcardgame.core.common.getTopSafeAreaPadding
 import com.alperenturker.englishcardgame.core.domain.model.AnswerOption
 import com.alperenturker.englishcardgame.core.domain.model.LevelTestQuestion
 
@@ -39,6 +40,7 @@ fun LevelTestScreen(
     onResultComplete: () -> Unit
 ) {
     val currentQuestion = questions.getOrNull(currentQuestionIndex)
+    val safeAreaPadding = getTopSafeAreaPadding()
     
     Box(
         modifier = Modifier
@@ -66,7 +68,7 @@ fun LevelTestScreen(
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
                     .padding(horizontal = 20.dp)
-                    .padding(top = 8.dp), // Safe area padding
+                    .padding(safeAreaPadding),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Spacer(modifier = Modifier.height(32.dp))
@@ -325,6 +327,7 @@ fun LevelTestResultScreen(
     totalQuestions: Int,
     onComplete: () -> Unit
 ) {
+    val safeAreaPadding = getTopSafeAreaPadding()
     val percentage = (score.toFloat() / totalQuestions) * 100f
     val difficulty = when {
         percentage <= 30f -> "EASY"
@@ -341,7 +344,8 @@ fun LevelTestResultScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(32.dp),
+            .padding(32.dp)
+            .padding(safeAreaPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
