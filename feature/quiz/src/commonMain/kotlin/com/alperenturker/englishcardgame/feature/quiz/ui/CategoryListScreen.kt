@@ -29,6 +29,7 @@ import com.alperenturker.englishcardgame.feature.quiz.viewmodel.CategoryListView
 @Composable
 fun CategoryListScreen(
     onCategorySelected: (String, String, String?) -> Unit,
+    onProfileClick: () -> Unit,
     viewModel: CategoryListViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -79,7 +80,42 @@ fun CategoryListScreen(
                 .padding(horizontal = 20.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(50.dp))
+            // Profile Button
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp, bottom = 8.dp),
+                horizontalArrangement = Arrangement.End
+            ) {
+                IconButton(
+                    onClick = onProfileClick,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .shadow(8.dp, RoundedCornerShape(16.dp))
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(
+                                brush = Brush.horizontalGradient(
+                                    colors = listOf(
+                                        Color(0xFF4ECDC4),
+                                        Color(0xFF44A08D)
+                                    )
+                                )
+                            ),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "👤",
+                            fontSize = 24.sp
+                        )
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(20.dp))
             
             // Title
             Column(

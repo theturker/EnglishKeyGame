@@ -7,6 +7,7 @@ import com.alperenturker.englishcardgame.core.domain.usecase.GetUserProgressUseC
 import com.alperenturker.englishcardgame.core.domain.usecase.SubmitAnswerUseCase
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.CategoryListViewModel
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.LevelTestViewModel
+import com.alperenturker.englishcardgame.feature.quiz.viewmodel.ProfileViewModel
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.QuizViewModel
 
 object AppModule {
@@ -49,6 +50,10 @@ object AppModule {
     
     fun levelTestViewModel(): LevelTestViewModel {
         return LevelTestViewModel()
+    }
+    
+    fun profileViewModel(): ProfileViewModel {
+        return ProfileViewModel()
     }
 }
 

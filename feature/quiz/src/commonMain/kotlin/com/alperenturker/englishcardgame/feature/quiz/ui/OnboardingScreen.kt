@@ -30,23 +30,23 @@ fun OnboardingScreen(
 ) {
     val pages = listOf(
         OnboardingPage(
-            title = "Welcome to English Key!",
-            description = "Improve your English skills with fun and interactive quizzes. Learn new words, test your grammar, and track your progress.",
+            title = "English Key'e Hoş Geldiniz!",
+            description = "İngilizce pratik yapmak için eğlenceli ve interaktif quizler. Yeni kelimeler öğrenin, dilbilginizi test edin ve ilerlemenizi takip edin.",
             icon = "🎯"
         ),
         OnboardingPage(
-            title = "Adaptive Learning",
-            description = "Our smart system adjusts difficulty based on your performance. Answer correctly to level up, or get easier questions if you need help.",
+            title = "Akıllı Öğrenme Sistemi",
+            description = "Sistemimiz performansınıza göre zorluğu otomatik ayarlar. Doğru cevaplar vererek seviye atlayın veya yardıma ihtiyacınız olduğunda daha kolay sorular alın.",
             icon = "📈"
         ),
         OnboardingPage(
-            title = "Multiple Categories",
-            description = "Explore various topics like Games, Movies, Science, Culture, and more. Each category offers unique challenges to keep you engaged.",
+            title = "Çeşitli Kategoriler",
+            description = "Oyunlar, Filmler, Bilim, Kültür ve daha fazlası gibi farklı konuları keşfedin. Her kategori sizi meşgul tutacak benzersiz zorluklar sunar.",
             icon = "🎮"
         ),
         OnboardingPage(
-            title = "Track Your Progress",
-            description = "See your improvement over time. Every question you answer helps you become better at English. Let's start your journey!",
+            title = "İlerlemenizi Takip Edin",
+            description = "Zamanla nasıl geliştiğinizi görün. Cevapladığınız her soru İngilizce'nizi daha iyi hale getirir. Hadi yolculuğunuza başlayalım!",
             icon = "🏆"
         )
     )
@@ -130,7 +130,7 @@ fun OnboardingScreen(
                             contentColor = Color.White.copy(alpha = 0.7f)
                         )
                     ) {
-                        Text("Previous", fontSize = 16.sp)
+                        Text("Önceki", fontSize = 16.sp)
                     }
                 } else {
                     Spacer(modifier = Modifier.width(1.dp))
@@ -151,7 +151,7 @@ fun OnboardingScreen(
                     )
                 ) {
                     Text(
-                        text = if (currentPage < pages.size - 1) "Next" else "Get Started",
+                        text = if (currentPage < pages.size - 1) "İleri" else "Başlayalım",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White

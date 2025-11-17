@@ -8,6 +8,7 @@ import com.alperenturker.englishcardgame.feature.quiz.di.AppModule
 import com.alperenturker.englishcardgame.feature.quiz.ui.CategoryListScreen
 import com.alperenturker.englishcardgame.feature.quiz.ui.LevelTestScreen
 import com.alperenturker.englishcardgame.feature.quiz.ui.OnboardingScreen
+import com.alperenturker.englishcardgame.feature.quiz.ui.ProfileScreen
 import com.alperenturker.englishcardgame.feature.quiz.ui.QuizScreen
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.CategoryListViewModel
 import kotlinx.coroutines.launch
@@ -16,6 +17,7 @@ sealed class Screen {
     object Onboarding : Screen()
     object LevelTest : Screen()
     object CategoryList : Screen()
+    object Profile : Screen()
     data class Quiz(val categoryId: String, val categoryName: String, val categoryIcon: String?) : Screen()
 }
 
@@ -39,6 +41,7 @@ fun AppNavigation(modifier: Modifier = Modifier) {
     // Create ViewModel using remember for cross-platform compatibility
     val categoryListViewModel = remember { AppModule.categoryListViewModel() }
     val levelTestViewModel = remember { AppModule.levelTestViewModel() }
+    val profileViewModel = remember { AppModule.profileViewModel() }
     
     Box(modifier = modifier) {
         when (val screen = currentScreen) {
@@ -84,7 +87,19 @@ fun AppNavigation(modifier: Modifier = Modifier) {
                     onCategorySelected = { categoryId, categoryName, categoryIcon ->
                         currentScreen = Screen.Quiz(categoryId, categoryName, categoryIcon)
                     },
+                    onProfileClick = {
+                        currentScreen = Screen.Profile
+                    },
                     viewModel = categoryListViewModel
+                )
+            }
+            
+            is Screen.Profile -> {
+                ProfileScreen(
+                    viewModel = profileViewModel,
+                    onBackClick = {
+                        currentScreen = Screen.CategoryList
+                    }
                 )
             }
             

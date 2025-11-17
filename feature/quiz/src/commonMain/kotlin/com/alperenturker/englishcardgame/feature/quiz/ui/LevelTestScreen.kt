@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -71,7 +72,7 @@ fun LevelTestScreen(
                 
                 // Progress Indicator
                 Text(
-                    text = "Question ${currentQuestionIndex + 1} / ${questions.size}",
+                    text = "Soru ${currentQuestionIndex + 1} / ${questions.size}",
                     style = MaterialTheme.typography.bodyLarge.copy(
                         color = Color.White.copy(alpha = 0.9f),
                         fontWeight = FontWeight.Medium
@@ -193,7 +194,7 @@ fun LevelTestScreen(
                         )
                     ) {
                         Text(
-                            text = if (currentQuestionIndex < questions.size - 1) "Next Question" else "Complete Test",
+                            text = if (currentQuestionIndex < questions.size - 1) "Sonraki Soru" else "Testi Tamamla",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.Bold,
                             color = Color.White
@@ -343,16 +344,45 @@ fun LevelTestResultScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        // Result Icon
-        Text(
-            text = "🎉",
-            fontSize = 100.sp,
-            modifier = Modifier.padding(bottom = 24.dp)
+        // Animated Result Icon
+        val scale by animateFloatAsState(
+            targetValue = 1f,
+            animationSpec = spring(
+                dampingRatio = Spring.DampingRatioMediumBouncy,
+                stiffness = Spring.StiffnessLow
+            ),
+            label = "result_icon_scale"
         )
         
-        // Score
+        Box(
+            modifier = Modifier
+                .size(140.dp)
+                .graphicsLayer {
+                    scaleX = scale
+                    scaleY = scale
+                }
+                .clip(RoundedCornerShape(70.dp))
+                .background(
+                    brush = Brush.radialGradient(
+                        colors = listOf(
+                            difficultyColor.copy(alpha = 0.3f),
+                            difficultyColor.copy(alpha = 0.1f)
+                        )
+                    )
+                ),
+            contentAlignment = Alignment.Center
+        ) {
+            Text(
+                text = "🎉",
+                fontSize = 80.sp
+            )
+        }
+        
+        Spacer(modifier = Modifier.height(32.dp))
+        
+        // Score with animated counter
         Text(
-            text = "Your Score",
+            text = "Puanınız",
             style = MaterialTheme.typography.titleLarge.copy(
                 color = Color.White.copy(alpha = 0.8f),
                 fontSize = 20.sp
@@ -367,63 +397,118 @@ fun LevelTestResultScreen(
                 color = Color.White,
                 fontSize = 56.sp
             ),
-            modifier = Modifier.padding(bottom = 32.dp)
+            modifier = Modifier.padding(bottom = 8.dp)
         )
         
-        // Difficulty Card
+        Text(
+            text = "${(score.toFloat() / totalQuestions * 100).toInt()}%",
+            style = MaterialTheme.typography.titleLarge.copy(
+                color = difficultyColor,
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp
+            ),
+            modifier = Modifier.padding(bottom = 40.dp)
+        )
+        
+        // Difficulty Card with enhanced design
         Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp),
-            shape = RoundedCornerShape(20.dp),
+                .padding(horizontal = 24.dp)
+                .shadow(20.dp, RoundedCornerShape(24.dp)),
+            shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(
-                containerColor = difficultyColor.copy(alpha = 0.2f)
-            ),
-            border = BorderStroke(2.dp, difficultyColor)
+                containerColor = Color.White
+            )
         ) {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = "Your Level",
-                    style = MaterialTheme.typography.bodyMedium.copy(
-                        color = Color.White.copy(alpha = 0.7f)
-                    ),
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Text(
-                    text = difficulty,
-                    style = MaterialTheme.typography.headlineMedium.copy(
-                        fontWeight = FontWeight.Bold,
-                        color = difficultyColor,
-                        fontSize = 32.sp
+                    .background(
+                        brush = Brush.verticalGradient(
+                            colors = listOf(
+                                difficultyColor.copy(alpha = 0.15f),
+                                difficultyColor.copy(alpha = 0.05f)
+                            )
+                        )
                     )
-                )
+                    .padding(28.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = "Seviyeniz",
+                        style = MaterialTheme.typography.bodyMedium.copy(
+                            color = Color(0xFF1A1A2E).copy(alpha = 0.7f),
+                            fontSize = 16.sp
+                        ),
+                        modifier = Modifier.padding(bottom = 12.dp)
+                    )
+                    Text(
+                        text = when (difficulty) {
+                            "EASY" -> "Başlangıç"
+                            "MEDIUM" -> "Orta"
+                            else -> "İleri"
+                        },
+                        style = MaterialTheme.typography.headlineMedium.copy(
+                            fontWeight = FontWeight.Bold,
+                            color = difficultyColor,
+                            fontSize = 36.sp
+                        ),
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Text(
+                        text = when (difficulty) {
+                            "EASY" -> "Kolay seviyeden başlıyorsunuz"
+                            "MEDIUM" -> "Orta seviyedesiniz"
+                            else -> "İleri seviyedesiniz"
+                        },
+                        style = MaterialTheme.typography.bodySmall.copy(
+                            color = Color(0xFF1A1A2E).copy(alpha = 0.6f),
+                            fontSize = 14.sp
+                        )
+                    )
+                }
             }
         }
         
         Spacer(modifier = Modifier.height(48.dp))
         
-        // Continue Button
+        // Continue Button with gradient
         Button(
             onClick = onComplete,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(56.dp),
+                .height(56.dp)
+                .shadow(12.dp, RoundedCornerShape(16.dp)),
             shape = RoundedCornerShape(16.dp),
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF4ECDC4)
+                containerColor = Color.Transparent
             )
         ) {
-            Text(
-                text = "Continue",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(
+                                Color(0xFF4ECDC4),
+                                Color(0xFF44A08D)
+                            )
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "Devam Et",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White
+                )
+            }
         }
     }
 }
