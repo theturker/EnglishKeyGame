@@ -2,6 +2,7 @@ package com.alperenturker.englishcardgame.feature.quiz.ui
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alperenturker.englishcardgame.core.common.getTopSafeAreaPadding
 import com.alperenturker.englishcardgame.core.domain.model.Category
+import com.alperenturker.englishcardgame.feature.quiz.ui.theme.*
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.CategoryListViewModel
 
 @Composable
@@ -36,45 +38,8 @@ fun CategoryListScreen(
     val uiState by viewModel.uiState.collectAsState()
     val safeAreaPadding = getTopSafeAreaPadding()
     
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1A1A2E),
-                        Color(0xFF16213E),
-                        Color(0xFF0F3460)
-                    )
-                )
-            )
-    ) {
-        // Decorative stars/particles
-        Box(modifier = Modifier.fillMaxSize()) {
-            repeat(20) {
-                val offsetX = remember { (0..100).random() }
-                val offsetY = remember { (0..100).random() }
-                val size = remember { (2..6).random().dp }
-                val delay = remember { (0..2000).random() }
-                
-                LaunchedEffect(Unit) {
-                    kotlinx.coroutines.delay(delay.toLong())
-                }
-                
-                Box(
-                    modifier = Modifier
-                        .offset(
-                            x = (offsetX * 4).dp,
-                            y = (offsetY * 8).dp
-                        )
-                        .size(size)
-                        .background(
-                            Color.White.copy(alpha = 0.3f),
-                            RoundedCornerShape(50)
-                        )
-                )
-            }
-        }
+    Box(modifier = Modifier.fillMaxSize()) {
+        GlassBackground(modifier = Modifier.fillMaxSize())
         
         Column(
             modifier = Modifier
@@ -83,44 +48,49 @@ fun CategoryListScreen(
                 .padding(safeAreaPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Profile Button
+            // Profile Button - Glassmorphism style
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp, bottom = 8.dp),
                 horizontalArrangement = Arrangement.End
             ) {
-                IconButton(
-                    onClick = onProfileClick,
+                Box(
                     modifier = Modifier
-                        .size(56.dp)
-                        .shadow(8.dp, RoundedCornerShape(16.dp))
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(
-                                brush = Brush.horizontalGradient(
-                                    colors = listOf(
-                                        Color(0xFF4ECDC4),
-                                        Color(0xFF44A08D)
-                                    )
+                        .size(64.dp)
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(
+                            brush = Brush.radialGradient(
+                                colors = listOf(
+                                    GlassColors.glowPurple.copy(alpha = 0.3f),
+                                    GlassColors.glowPurple.copy(alpha = 0.1f)
+                                )
+                            )
+                        )
+                        .border(
+                            width = 1.5.dp,
+                            brush = Brush.linearGradient(
+                                colors = listOf(
+                                    GlassColors.glowPurple.copy(alpha = 0.6f),
+                                    GlassColors.glowPurple.copy(alpha = 0.3f)
                                 )
                             ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "👤",
-                            fontSize = 24.sp
+                            shape = RoundedCornerShape(20.dp)
                         )
-                    }
+                        .clickable(onClick = onProfileClick),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "👤",
+                        fontSize = 28.sp
+                    )
                 }
             }
             
             Spacer(modifier = Modifier.height(20.dp))
             
-            // Title
+            // Title - Glassmorphism style
+            Spacer(modifier = Modifier.height(16.dp))
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -129,27 +99,32 @@ fun CategoryListScreen(
             ) {
                 Text(
                     text = "🎮",
-                    fontSize = 72.sp
+                    fontSize = 80.sp
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
                 Text(
                     text = "English Quiz",
                     style = MaterialTheme.typography.displayLarge.copy(
                         fontWeight = FontWeight.ExtraBold,
-                        fontSize = 52.sp,
+                        fontSize = 56.sp,
                         color = Color.White
                     ),
-                    textAlign = TextAlign.Center
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.shadow(
+                        elevation = 8.dp,
+                        shape = RoundedCornerShape(4.dp),
+                        spotColor = GlassColors.glowCyan.copy(alpha = 0.5f)
+                    )
                 )
             }
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(12.dp))
             
             Text(
                 text = "Kategorilerden birini seç ve başla!",
                 style = MaterialTheme.typography.titleLarge.copy(
-                    color = Color.White.copy(alpha = 0.9f),
-                    fontSize = 18.sp,
+                    color = Color.White.copy(alpha = 0.95f),
+                    fontSize = 20.sp,
                     fontWeight = FontWeight.Medium
                 ),
                 textAlign = TextAlign.Center,
@@ -273,34 +248,68 @@ fun CategoryCard(
     category: Category,
     onClick: () -> Unit
 ) {
-    // Oyun tarzı renkli gradient'ler
-    val gradients = listOf(
-        listOf(Color(0xFFFF6B6B), Color(0xFFFF8E8E), Color(0xFFFF6B9D)),
-        listOf(Color(0xFF4ECDC4), Color(0xFF44A08D), Color(0xFF4ECDC4)),
-        listOf(Color(0xFFFFE66D), Color(0xFFFFD93D), Color(0xFFFFB84D)),
-        listOf(Color(0xFFA8E6CF), Color(0xFF88D8A3), Color(0xFF6BCB94)),
-        listOf(Color(0xFF95E1D3), Color(0xFFF38181), Color(0xFFAA96DA)),
-        listOf(Color(0xFFFAD0C4), Color(0xFFFFD1FF), Color(0xFFFF9A9E)),
-        listOf(Color(0xFFA1C4FD), Color(0xFFC2E9FB), Color(0xFFA8EDEA)),
-        listOf(Color(0xFFFFD89B), Color(0xFFFF9A56), Color(0xFFFF6B6B))
+    // Glassmorphism glow renkleri
+    val glowColors = listOf(
+        GlassColors.glowCyan,
+        GlassColors.glowPurple,
+        GlassColors.glowPink,
+        GlassColors.glowYellow,
+        GlassColors.accentCyan,
+        GlassColors.accentPurple
     )
     
-    val gradientIndex = (category.id.hashCode() % gradients.size).let { 
+    val colorIndex = (category.id.hashCode() % glowColors.size).let { 
         if (it < 0) -it else it 
     }
-    val gradientColors = gradients[gradientIndex]
+    val glowColor = glowColors[colorIndex]
+    
+    val infiniteTransition = rememberInfiniteTransition(label = "category_glow")
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = 0.4f,
+        targetValue = 0.7f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "category_glow_alpha"
+    )
+    
+    var isHovered by remember { mutableStateOf(false) }
+    val scale by animateFloatAsState(
+        targetValue = if (isHovered) 1.03f else 1f,
+        animationSpec = spring(
+            dampingRatio = Spring.DampingRatioMediumBouncy,
+            stiffness = Spring.StiffnessLow
+        ),
+        label = "card_scale"
+    )
     
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(200.dp)
+            .height(220.dp)
+            .graphicsLayer {
+                scaleX = scale
+                scaleY = scale
+            }
             .clickable(onClick = onClick)
             .shadow(
-                elevation = 20.dp,
-                shape = RoundedCornerShape(28.dp),
-                spotColor = gradientColors.first().copy(alpha = 0.5f)
+                elevation = 24.dp,
+                shape = RoundedCornerShape(32.dp),
+                spotColor = glowColor.copy(alpha = glowAlpha)
+            )
+            .border(
+                width = 2.dp,
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        glowColor.copy(alpha = glowAlpha),
+                        glowColor.copy(alpha = glowAlpha * 0.5f),
+                        Color.Transparent
+                    )
+                ),
+                shape = RoundedCornerShape(32.dp)
             ),
-        shape = RoundedCornerShape(28.dp),
+        shape = RoundedCornerShape(32.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
         )
@@ -310,19 +319,29 @@ fun CategoryCard(
                 .fillMaxSize()
                 .background(
                     brush = Brush.verticalGradient(
-                        colors = gradientColors
+                        colors = listOf(
+                            glowColor.copy(alpha = 0.25f),
+                            glowColor.copy(alpha = 0.15f),
+                            Color(0xFFFFFFFF).copy(alpha = 0.1f),
+                            Color(0xFF000000).copy(alpha = 0.15f)
+                        )
                     )
                 )
-                .padding(24.dp),
+                .padding(28.dp),
             contentAlignment = Alignment.Center
         ) {
-            // Decorative circle
+            // Decorative glass circle
             Box(
                 modifier = Modifier
-                    .size(120.dp)
+                    .size(140.dp)
+                    .clip(RoundedCornerShape(70.dp))
                     .background(
-                        Color.White.copy(alpha = 0.2f),
-                        RoundedCornerShape(60.dp)
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.15f),
+                                Color.Transparent
+                            )
+                        )
                     )
             )
             
@@ -333,18 +352,17 @@ fun CategoryCard(
             ) {
                 Text(
                     text = category.icon ?: "📚",
-                    fontSize = 72.sp,
-                    modifier = Modifier.padding(bottom = 12.dp)
+                    fontSize = 80.sp,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
                 Text(
                     text = category.name,
                     style = MaterialTheme.typography.titleLarge.copy(
                         fontWeight = FontWeight.Bold,
                         color = Color.White,
-                        fontSize = 22.sp
+                        fontSize = 24.sp
                     ),
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.shadow(2.dp, RoundedCornerShape(4.dp))
+                    textAlign = TextAlign.Center
                 )
             }
         }

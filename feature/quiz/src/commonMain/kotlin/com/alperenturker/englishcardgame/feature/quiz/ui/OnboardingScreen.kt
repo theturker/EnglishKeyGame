@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alperenturker.englishcardgame.core.common.getTopSafeAreaPadding
+import com.alperenturker.englishcardgame.feature.quiz.ui.theme.*
 
 data class OnboardingPage(
     val title: String,
@@ -55,19 +56,8 @@ fun OnboardingScreen(
     var currentPage by remember { mutableStateOf(0) }
     val safeAreaPadding = getTopSafeAreaPadding()
     
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1A1A2E),
-                        Color(0xFF16213E),
-                        Color(0xFF0F3460)
-                    )
-                )
-            )
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        GlassBackground(modifier = Modifier.fillMaxSize())
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -140,7 +130,7 @@ fun OnboardingScreen(
                     Spacer(modifier = Modifier.width(1.dp))
                 }
                 
-                Button(
+                GlassButton(
                     onClick = {
                         if (currentPage < pages.size - 1) {
                             currentPage++
@@ -148,19 +138,11 @@ fun OnboardingScreen(
                             onComplete()
                         }
                     },
-                    modifier = Modifier.height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4ECDC4)
-                    )
-                ) {
-                    Text(
-                        text = if (currentPage < pages.size - 1) "İleri" else "Başlayalım",
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = Color.White
-                    )
-                }
+                    modifier = Modifier.height(60.dp),
+                    text = if (currentPage < pages.size - 1) "İleri" else "Başlayalım",
+                    glowColor = GlassColors.glowCyan,
+                    shape = RoundedCornerShape(20.dp)
+                )
             }
         }
     }

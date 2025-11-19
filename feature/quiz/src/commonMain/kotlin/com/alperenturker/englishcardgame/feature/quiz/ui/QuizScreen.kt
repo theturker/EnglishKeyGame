@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alperenturker.englishcardgame.core.common.getTopSafeAreaPadding
 import com.alperenturker.englishcardgame.core.domain.model.Difficulty
+import com.alperenturker.englishcardgame.feature.quiz.ui.theme.*
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.QuizUiState
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.QuizViewModel
 
@@ -41,19 +42,8 @@ fun QuizScreen(
     val uiState by viewModel.uiState.collectAsState()
     val safeAreaPadding = getTopSafeAreaPadding()
     
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1A1A2E),
-                        Color(0xFF16213E),
-                        Color(0xFF0F3460)
-                    )
-                )
-            )
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        GlassBackground(modifier = Modifier.fillMaxSize())
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -193,28 +183,17 @@ fun QuizHeader(
         label = "progress"
     )
     
-    Card(
+    GlassCard(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .shadow(16.dp, RoundedCornerShape(24.dp)),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF1E1E3F).copy(alpha = 0.95f)
-        )
+            .padding(16.dp),
+        glowColor = GlassColors.glowCyan,
+        shape = RoundedCornerShape(28.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(
-                    brush = Brush.horizontalGradient(
-                        colors = listOf(
-                            Color(0xFF1E1E3F),
-                            Color(0xFF2A2A5A)
-                        )
-                    )
-                )
-                .padding(20.dp)
+                .padding(24.dp)
         ) {
             // Top Row
             Row(
@@ -223,14 +202,30 @@ fun QuizHeader(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onBackClick,
-                        modifier = Modifier.size(48.dp)
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(16.dp))
+                            .background(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        GlassColors.glowCyan.copy(alpha = 0.3f),
+                                        GlassColors.glowCyan.copy(alpha = 0.1f)
+                                    )
+                                )
+                            )
+                            .border(
+                                width = 1.5.dp,
+                                color = GlassColors.glowCyan.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(16.dp)
+                            )
+                            .clickable(onClick = onBackClick),
+                        contentAlignment = Alignment.Center
                     ) {
                         Text(
                             text = "←",
-                            fontSize = 32.sp,
-                            color = Color(0xFF4ECDC4),
+                            fontSize = 28.sp,
+                            color = GlassColors.glowCyan,
                             fontWeight = FontWeight.Bold
                         )
                     }
@@ -319,24 +314,17 @@ fun QuizHeader(
 
 @Composable
 fun DifficultyChip(difficulty: Difficulty) {
-    val (text, color) = when (difficulty) {
-        Difficulty.EASY -> "🟢 Kolay" to Color(0xFF4ECDC4)
-        Difficulty.MEDIUM -> "🟡 Orta" to Color(0xFFFFE66D)
-        Difficulty.HARD -> "🔴 Zor" to Color(0xFFFF6B6B)
+    val (text, glowColor) = when (difficulty) {
+        Difficulty.EASY -> "🟢 Kolay" to GlassColors.glowCyan
+        Difficulty.MEDIUM -> "🟡 Orta" to GlassColors.glowYellow
+        Difficulty.HARD -> "🔴 Zor" to GlassColors.glowPink
     }
     
-    Text(
+    GlassChip(
         text = text,
-        style = MaterialTheme.typography.labelMedium.copy(
-            color = color,
-            fontWeight = FontWeight.Bold,
-            fontSize = 12.sp
-        ),
-        modifier = Modifier
-            .padding(top = 4.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(color.copy(alpha = 0.2f))
-            .padding(horizontal = 10.dp, vertical = 4.dp)
+        glowColor = glowColor,
+        modifier = Modifier.padding(top = 4.dp),
+        shape = RoundedCornerShape(10.dp)
     )
 }
 
@@ -370,38 +358,26 @@ fun QuestionContent(
                     ),
             exit = fadeOut() + scaleOut()
         ) {
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(20.dp, RoundedCornerShape(28.dp)),
-                shape = RoundedCornerShape(28.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                )
+            GlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                glowColor = GlassColors.glowYellow,
+                shape = RoundedCornerShape(32.dp)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    Color(0xFFFFE66D).copy(alpha = 0.1f),
-                                    Color(0xFF4ECDC4).copy(alpha = 0.1f)
-                                )
-                            )
-                        )
-                        .padding(32.dp),
+                        .padding(40.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
                         text = question.text,
                         style = MaterialTheme.typography.headlineMedium.copy(
                             fontWeight = FontWeight.Bold,
-                            fontSize = 26.sp,
-                            lineHeight = 36.sp
+                            fontSize = 28.sp,
+                            lineHeight = 40.sp
                         ),
                         textAlign = TextAlign.Center,
-                        color = Color(0xFF1A1A2E)
+                        color = Color.White
                     )
                 }
             }
@@ -450,41 +426,26 @@ fun AnswerOptionCard(
     isCorrect: Boolean,
     onClick: () -> Unit
 ) {
-    val gradientColors = when {
-        showFeedback && isCorrect -> listOf(
-            Color(0xFF4ECDC4),
-            Color(0xFF44A08D)
-        )
-        showFeedback && isSelected && !option.isCorrect -> listOf(
-            Color(0xFFFF6B6B),
-            Color(0xFFFF5252)
-        )
-        isSelected -> listOf(
-            Color(0xFFFFE66D),
-            Color(0xFFFFD93D)
-        )
-        else -> listOf(
-            Color.White,
-            Color(0xFFF5F5F5)
-        )
+    val glowColor = when {
+        showFeedback && isCorrect -> GlassColors.glowCyan
+        showFeedback && isSelected && !option.isCorrect -> GlassColors.glowPink
+        isSelected -> GlassColors.glowYellow
+        else -> GlassColors.glowCyan.copy(alpha = 0.3f)
     }
     
-    val borderColor = when {
-        showFeedback && isCorrect -> Color(0xFF4ECDC4)
-        showFeedback && isSelected && !option.isCorrect -> Color(0xFFFF6B6B)
-        isSelected -> Color(0xFFFFE66D)
-        else -> Color.Gray.copy(alpha = 0.3f)
-    }
-    
-    val borderWidth = when {
-        showFeedback && isCorrect -> 3.dp
-        showFeedback && isSelected && !option.isCorrect -> 3.dp
-        isSelected -> 2.dp
-        else -> 1.dp
-    }
+    val infiniteTransition = rememberInfiniteTransition(label = "option_glow")
+    val glowAlpha by infiniteTransition.animateFloat(
+        initialValue = if (showFeedback || isSelected) 0.6f else 0.3f,
+        targetValue = if (showFeedback || isSelected) 0.9f else 0.5f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(1500, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "option_glow_alpha"
+    )
     
     val scale by animateFloatAsState(
-        targetValue = if (isSelected || showFeedback) 1.02f else 1f,
+        targetValue = if (isSelected || showFeedback) 1.03f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessLow
@@ -500,14 +461,26 @@ fun AnswerOptionCard(
                 scaleX = scale
                 scaleY = scale
             }
-            .clickable(enabled = !showFeedback, onClick = onClick),
-        shape = RoundedCornerShape(20.dp),
+            .clickable(enabled = !showFeedback, onClick = onClick)
+            .shadow(
+                elevation = if (showFeedback || isSelected) 20.dp else 12.dp,
+                shape = RoundedCornerShape(24.dp),
+                spotColor = glowColor.copy(alpha = glowAlpha)
+            )
+            .border(
+                width = if (showFeedback || isSelected) 2.5.dp else 1.5.dp,
+                brush = Brush.linearGradient(
+                    colors = listOf(
+                        glowColor.copy(alpha = glowAlpha),
+                        glowColor.copy(alpha = glowAlpha * 0.6f),
+                        Color.Transparent
+                    )
+                ),
+                shape = RoundedCornerShape(24.dp)
+            ),
+        shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(
             containerColor = Color.Transparent
-        ),
-        border = BorderStroke(
-            width = borderWidth,
-            color = borderColor
         )
     ) {
         Box(
@@ -515,9 +488,32 @@ fun AnswerOptionCard(
                 .fillMaxWidth()
                 .wrapContentHeight()
                 .background(
-                    brush = Brush.horizontalGradient(colors = gradientColors)
+                    brush = Brush.horizontalGradient(
+                        colors = when {
+                            showFeedback && isCorrect -> listOf(
+                                GlassColors.glowCyan.copy(alpha = 0.3f),
+                                GlassColors.glowCyan.copy(alpha = 0.2f),
+                                Color(0xFFFFFFFF).copy(alpha = 0.1f)
+                            )
+                            showFeedback && isSelected && !option.isCorrect -> listOf(
+                                GlassColors.glowPink.copy(alpha = 0.3f),
+                                GlassColors.glowPink.copy(alpha = 0.2f),
+                                Color(0xFFFFFFFF).copy(alpha = 0.1f)
+                            )
+                            isSelected -> listOf(
+                                GlassColors.glowYellow.copy(alpha = 0.3f),
+                                GlassColors.glowYellow.copy(alpha = 0.2f),
+                                Color(0xFFFFFFFF).copy(alpha = 0.1f)
+                            )
+                            else -> listOf(
+                                GlassColors.glassCardLight,
+                                GlassColors.glassCardMedium,
+                                GlassColors.glassCardDark
+                            )
+                        }
+                    )
                 )
-                .padding(horizontal = 20.dp, vertical = 20.dp)
+                .padding(horizontal = 24.dp, vertical = 24.dp)
         ) {
             Row(
                 modifier = Modifier
@@ -533,32 +529,37 @@ fun AnswerOptionCard(
                     verticalAlignment = Alignment.Top,
                     horizontalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Option ID Badge - fixed size, top aligned
+                    // Option ID Badge - Glassmorphism style
                     Box(
                         modifier = Modifier
-                            .size(48.dp)
-                            .clip(RoundedCornerShape(12.dp))
+                            .size(52.dp)
+                            .clip(RoundedCornerShape(14.dp))
                             .background(
                                 brush = Brush.radialGradient(
                                     colors = when {
                                         showFeedback && isCorrect -> listOf(
-                                            Color(0xFF4ECDC4),
-                                            Color(0xFF44A08D)
+                                            GlassColors.glowCyan.copy(alpha = 0.4f),
+                                            GlassColors.glowCyan.copy(alpha = 0.2f)
                                         )
                                         showFeedback && isSelected && !option.isCorrect -> listOf(
-                                            Color(0xFFFF6B6B),
-                                            Color(0xFFFF5252)
+                                            GlassColors.glowPink.copy(alpha = 0.4f),
+                                            GlassColors.glowPink.copy(alpha = 0.2f)
                                         )
                                         isSelected -> listOf(
-                                            Color(0xFFFFE66D),
-                                            Color(0xFFFFD93D)
+                                            GlassColors.glowYellow.copy(alpha = 0.4f),
+                                            GlassColors.glowYellow.copy(alpha = 0.2f)
                                         )
                                         else -> listOf(
-                                            Color(0xFF1E1E3F),
-                                            Color(0xFF2A2A5A)
+                                            GlassColors.glowCyan.copy(alpha = 0.2f),
+                                            GlassColors.glowCyan.copy(alpha = 0.1f)
                                         )
                                     }
                                 )
+                            )
+                            .border(
+                                width = 1.5.dp,
+                                color = glowColor.copy(alpha = glowAlpha * 0.8f),
+                                shape = RoundedCornerShape(14.dp)
                             ),
                         contentAlignment = Alignment.Center
                     ) {
@@ -567,23 +568,18 @@ fun AnswerOptionCard(
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
                                 color = Color.White,
-                                fontSize = 18.sp
+                                fontSize = 20.sp
                             )
                         )
                     }
                     
-                    // Text - takes remaining space, top aligned
+                    // Text - Glassmorphism style
                     Text(
                         text = option.text,
                         style = MaterialTheme.typography.bodyLarge.copy(
                             fontWeight = if (isSelected || showFeedback) FontWeight.Bold else FontWeight.Medium,
-                            fontSize = 17.sp,
-                            color = when {
-                                showFeedback && isCorrect -> Color.White
-                                showFeedback && isSelected && !option.isCorrect -> Color.White
-                                isSelected -> Color(0xFF1A1A2E)
-                                else -> Color(0xFF1A1A2E)
-                            }
+                            fontSize = 18.sp,
+                            color = Color.White
                         ),
                         modifier = Modifier
                             .weight(1f)

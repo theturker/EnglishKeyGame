@@ -2,6 +2,7 @@ package com.alperenturker.englishcardgame.feature.quiz.ui
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.alperenturker.englishcardgame.core.common.getTopSafeAreaPadding
 import com.alperenturker.englishcardgame.core.domain.model.Difficulty
 import com.alperenturker.englishcardgame.core.domain.model.UserProgress
+import com.alperenturker.englishcardgame.feature.quiz.ui.theme.*
 import com.alperenturker.englishcardgame.feature.quiz.viewmodel.ProfileViewModel
 
 @Composable
@@ -39,19 +41,8 @@ fun ProfileScreen(
         viewModel.refresh()
     }
     
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1A1A2E),
-                        Color(0xFF16213E),
-                        Color(0xFF0F3460)
-                    )
-                )
-            )
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        GlassBackground(modifier = Modifier.fillMaxSize(), variant = 1)
         if (uiState.isLoading) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -114,29 +105,18 @@ fun ProfileScreen(
             
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Level Card
-            Card(
+            // Level Card - Glassmorphism
+            GlassCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .shadow(20.dp, RoundedCornerShape(24.dp)),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                )
+                    .padding(horizontal = 20.dp),
+                glowColor = getDifficultyColor(uiState.currentLevel),
+                shape = RoundedCornerShape(28.dp)
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    getDifficultyColor(uiState.currentLevel).copy(alpha = 0.15f),
-                                    getDifficultyColor(uiState.currentLevel).copy(alpha = 0.05f)
-                                )
-                            )
-                        )
-                        .padding(28.dp),
+                        .padding(32.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     Column(
@@ -169,52 +149,52 @@ fun ProfileScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            // Overall Stats
-            Card(
+            // Overall Stats - Glassmorphism
+            GlassCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
-                    .shadow(16.dp, RoundedCornerShape(20.dp)),
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.White
-                )
+                    .padding(horizontal = 20.dp),
+                glowColor = GlassColors.glowPurple,
+                shape = RoundedCornerShape(24.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(24.dp)
+                        .padding(28.dp)
                 ) {
                     Text(
                         text = "Genel İstatistikler",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1A1A2E),
-                            fontSize = 22.sp
+                            color = Color.White,
+                            fontSize = 24.sp
                         ),
-                        modifier = Modifier.padding(bottom = 20.dp)
+                        modifier = Modifier.padding(bottom = 24.dp)
                     )
                     
                     StatRow(
                         label = "Toplam Soru",
                         value = uiState.totalAnswered.toString(),
-                        icon = "📝"
+                        icon = "📝",
+                        textColor = Color.White
                     )
                     
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                     
                     StatRow(
                         label = "Doğru Cevap",
                         value = uiState.totalCorrect.toString(),
-                        icon = "✅"
+                        icon = "✅",
+                        textColor = Color.White
                     )
                     
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                     
                     StatRow(
                         label = "Başarı Oranı",
                         value = "${(uiState.accuracy * 100).toInt()}%",
-                        icon = "📊"
+                        icon = "📊",
+                        textColor = Color.White
                     )
                 }
             }
@@ -238,7 +218,7 @@ fun ProfileScreen(
                 uiState.categoryProgress.forEach { progress ->
                     CategoryProgressCard(
                         progress = progress,
-                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 10.dp)
                     )
                 }
             } else {
@@ -284,7 +264,8 @@ fun ProfileScreen(
 fun StatRow(
     label: String,
     value: String,
-    icon: String
+    icon: String,
+    textColor: Color = Color.White
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -297,13 +278,13 @@ fun StatRow(
         ) {
             Text(
                 text = icon,
-                fontSize = 24.sp
+                fontSize = 28.sp
             )
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge.copy(
-                    color = Color(0xFF1A1A2E).copy(alpha = 0.8f),
-                    fontSize = 16.sp
+                    color = textColor.copy(alpha = 0.9f),
+                    fontSize = 18.sp
                 )
             )
         }
@@ -311,8 +292,8 @@ fun StatRow(
             text = value,
             style = MaterialTheme.typography.titleLarge.copy(
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF1A1A2E),
-                fontSize = 20.sp
+                color = textColor,
+                fontSize = 22.sp
             )
         )
     }
@@ -329,19 +310,15 @@ fun CategoryProgressCard(
         (progress.totalCorrect.toFloat() / progress.totalAnswered) * 100f
     } else 0f
     
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .shadow(12.dp, RoundedCornerShape(16.dp)),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.White
-        )
+    GlassCard(
+        modifier = modifier.fillMaxWidth(),
+        glowColor = GlassColors.glowCyan,
+        shape = RoundedCornerShape(20.dp)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp)
+                .padding(24.dp)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -354,24 +331,23 @@ fun CategoryProgressCard(
                 ) {
                     Text(
                         text = categoryIcon,
-                        fontSize = 32.sp
+                        fontSize = 36.sp
                     )
                     Column {
                         Text(
                             text = categoryName,
                             style = MaterialTheme.typography.titleMedium.copy(
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF1A1A2E),
-                                fontSize = 18.sp
+                                color = Color.White,
+                                fontSize = 20.sp
                             )
                         )
-                        Text(
+                        Spacer(modifier = Modifier.height(4.dp))
+                        GlassChip(
                             text = getDifficultyText(progress.currentDifficulty),
-                            style = MaterialTheme.typography.bodySmall.copy(
-                                color = getDifficultyColor(progress.currentDifficulty),
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Medium
-                            )
+                            glowColor = getDifficultyColor(progress.currentDifficulty),
+                            modifier = Modifier,
+                            shape = RoundedCornerShape(8.dp)
                         )
                     }
                 }
@@ -383,15 +359,15 @@ fun CategoryProgressCard(
                         text = "${accuracy.toInt()}%",
                         style = MaterialTheme.typography.titleLarge.copy(
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFF1A1A2E),
-                            fontSize = 20.sp
+                            color = Color.White,
+                            fontSize = 22.sp
                         )
                     )
                     Text(
                         text = "${progress.totalCorrect}/${progress.totalAnswered}",
                         style = MaterialTheme.typography.bodySmall.copy(
-                            color = Color(0xFF1A1A2E).copy(alpha = 0.6f),
-                            fontSize = 12.sp
+                            color = Color.White.copy(alpha = 0.7f),
+                            fontSize = 14.sp
                         )
                     )
                 }
@@ -399,24 +375,37 @@ fun CategoryProgressCard(
             
             Spacer(modifier = Modifier.height(12.dp))
             
-            // Progress Bar
+            // Progress Bar - Glassmorphism
+            Spacer(modifier = Modifier.height(16.dp))
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-                    .background(Color(0xFFE0E0E0))
+                    .height(10.dp)
+                    .clip(RoundedCornerShape(5.dp))
+                    .background(
+                        brush = Brush.horizontalGradient(
+                            colors = listOf(
+                                Color.White.copy(alpha = 0.1f),
+                                Color.White.copy(alpha = 0.05f)
+                            )
+                        )
+                    )
+                    .border(
+                        width = 1.dp,
+                        color = Color.White.copy(alpha = 0.2f),
+                        shape = RoundedCornerShape(5.dp)
+                    )
             ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth(accuracy / 100f)
                         .fillMaxHeight()
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(RoundedCornerShape(5.dp))
                         .background(
                             brush = Brush.horizontalGradient(
                                 colors = listOf(
-                                    Color(0xFF4ECDC4),
-                                    Color(0xFF44A08D)
+                                    GlassColors.glowCyan.copy(alpha = 0.6f),
+                                    GlassColors.glowCyan.copy(alpha = 0.4f)
                                 )
                             )
                         )

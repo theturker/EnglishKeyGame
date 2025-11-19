@@ -20,6 +20,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.alperenturker.englishcardgame.core.domain.model.Difficulty
+import com.alperenturker.englishcardgame.feature.quiz.ui.theme.*
 
 @Composable
 fun ResultScreen(
@@ -59,19 +60,8 @@ fun ResultScreen(
         else -> "💪"
     }
     
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(
-                brush = Brush.verticalGradient(
-                    colors = listOf(
-                        Color(0xFF1A1A2E),
-                        Color(0xFF16213E),
-                        Color(0xFF0F3460)
-                    )
-                )
-            )
-    ) {
+    Box(modifier = Modifier.fillMaxSize()) {
+        GlassBackground(modifier = Modifier.fillMaxSize())
         // Confetti effect (simple stars)
         Box(modifier = Modifier.fillMaxSize()) {
             repeat(30) {
@@ -140,28 +130,16 @@ fun ResultScreen(
                 modifier = Modifier.padding(bottom = 32.dp)
             )
             
-            // Results Card
-            Card(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .shadow(24.dp, RoundedCornerShape(28.dp)),
-                shape = RoundedCornerShape(28.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color(0xFF1E1E3F).copy(alpha = 0.95f)
-                )
+            // Results Card - Glassmorphism
+            GlassCard(
+                modifier = Modifier.fillMaxWidth(),
+                glowColor = GlassColors.glowCyan,
+                shape = RoundedCornerShape(32.dp)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(
-                            brush = Brush.verticalGradient(
-                                colors = listOf(
-                                    Color(0xFF1E1E3F),
-                                    Color(0xFF2A2A5A)
-                                )
-                            )
-                        )
-                        .padding(28.dp),
+                        .padding(32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     // Percentage Circle with gradient
@@ -261,58 +239,32 @@ fun ResultScreen(
             
             Spacer(modifier = Modifier.height(32.dp))
             
-            // Action Buttons
+            // Action Buttons - Glassmorphism
             Column(
                 modifier = Modifier.fillMaxWidth(),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Button(
+                GlassButton(
                     onClick = onRestartQuiz,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(60.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF4ECDC4)
-                    )
-                ) {
-                    Text(
-                        text = "🔄 Tekrar Oyna",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            color = Color.White,
-                            fontSize = 18.sp
-                        )
-                    )
-                }
+                    text = "Tekrar Oyna",
+                    icon = "🔄",
+                    glowColor = GlassColors.glowCyan,
+                    shape = RoundedCornerShape(20.dp)
+                )
                 
-                OutlinedButton(
+                GlassButton(
                     onClick = onBackToCategories,
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(60.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(
-                        contentColor = Color.White
-                    ),
-                    border = BorderStroke(
-                        width = 2.dp,
-                        brush = Brush.horizontalGradient(
-                            colors = listOf(
-                                Color(0xFFFFE66D),
-                                Color(0xFFFFD93D)
-                            )
-                        )
-                    )
-                ) {
-                    Text(
-                        text = "🏠 Kategorilere Dön",
-                        style = MaterialTheme.typography.titleLarge.copy(
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp
-                        )
-                    )
-                }
+                    text = "Kategorilere Dön",
+                    icon = "🏠",
+                    glowColor = GlassColors.glowYellow,
+                    shape = RoundedCornerShape(20.dp)
+                )
             }
         }
     }
